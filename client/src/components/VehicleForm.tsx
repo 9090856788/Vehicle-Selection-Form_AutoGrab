@@ -2,6 +2,22 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./../index.css";
 
+const MODELS: Record<string, Record<string, string[]>> = {
+  ford: {
+    Ranger: ["Raptor", "Raptor X", "Wildtrak"],
+    Falcon: ["XR6", "XR6 Turbo", "XR8"],
+    "Falcon Ute": ["XR6", "XR6 Turbo"],
+  },
+  bmw: {
+    "130d": ["xDrive 26d", "xDrive 30d"],
+    "240i": ["xDrive 30d", "xDrive 50d"],
+    "320e": ["xDrive 75d", "xDrive 80d", "xDrive 85d"],
+  },
+  tesla: {
+    "Model 3": ["Performance", "Long Range", "Dual Motor"],
+  },
+};
+
 type VehicleData = {
   make: string;
   model: string;
@@ -21,7 +37,7 @@ const VehicleForm: React.FC = () => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile && selectedFile.type !== "text/plain") {
       alert("Only .txt files are allowed!");
-      e.target.value = ""; // Reset file input
+      e.target.value = "";
     } else {
       setFile(selectedFile || null);
     }
@@ -54,44 +70,91 @@ const VehicleForm: React.FC = () => {
     }
   };
 
+  const handleQuickSelect = (
+    selectedMake: string,
+    selectedModel: string,
+    selectedBadge: string
+  ) => {
+    setMake(selectedMake);
+    setModel(selectedModel);
+    setBadge(selectedBadge);
+  };
+
   return (
     <div className="form-container">
       <h2>Vehicle Selection Form</h2>
       <form onSubmit={handleSubmit}>
         <label>Make</label>
-        <select value={make} onChange={(e) => setMake(e.target.value)}>
+        <select
+          value={make}
+          onChange={(e) => {
+            setMake(e.target.value);
+            setModel("");
+            setBadge("");
+          }}
+        >
           <option value="">Select Make</option>
-          <option value="ford">Ford</option>
-          <option value="bmw">BMW</option>
-          <option value="tesla">Tesla</option>
+          {Object.keys(MODELS).map((key) => (
+            <option key={key} value={key}>
+              {key.charAt(0).toUpperCase() + key.slice(1)}
+            </option>
+          ))}
         </select>
 
-        <label>Model</label>
-        <select
-          value={model}
-          onChange={(e) => setModel(e.target.value)}
-          disabled={!make}
-        >
-          <option value="">Select Model</option>
-          <option value="Ranger">Ranger</option>
-          <option value="Falcon">Falcon</option>
-        </select>
+        {make && (
+          <>
+            <label>Model</label>
+            <select
+              value={model}
+              onChange={(e) => {
+                setModel(e.target.value);
+                setBadge("");
+              }}
+            >
+              <option value="">Select Model</option>
+              {Object.keys(MODELS[make]).map((key) => (
+                <option key={key} value={key}>
+                  {key}
+                </option>
+              ))}
+            </select>
+          </>
+        )}
 
-        <label>Badge</label>
-        <select
-          value={badge}
-          onChange={(e) => setBadge(e.target.value)}
-          disabled={!model}
-        >
-          <option value="">Select Badge</option>
-          <option value="Raptor">Raptor</option>
-        </select>
+        {model && (
+          <>
+            <label>Badge</label>
+            <select value={badge} onChange={(e) => setBadge(e.target.value)}>
+              <option value="">Select Badge</option>
+              {MODELS[make][model].map((badge) => (
+                <option key={badge} value={badge}>
+                  {badge}
+                </option>
+              ))}
+            </select>
+          </>
+        )}
 
-        <label>Upload Logbook (Only .txt)</label>
-        <input type="file" accept=".txt" onChange={handleFileChange} />
-
-        <button type="submit">Submit</button>
+        {badge && (
+          <>
+            <label>Upload Logbook (Only .txt)</label>
+            <input type="file" accept=".txt" onChange={handleFileChange} />
+            <button type="submit">Submit</button>
+          </>
+        )}
       </form>
+
+      <div className="quick-select-buttons">
+        <h3>Quick Select Options</h3>
+        <button onClick={() => handleQuickSelect("ford", "Ranger", "Raptor")}>
+          Ford Ranger Raptor
+        </button>
+        <button
+          onClick={() => handleQuickSelect("tesla", "Model 3", "Performance")}
+        >
+          Tesla Model 3 Performance
+        </button>
+      </div>
     </div>
   );
 };
